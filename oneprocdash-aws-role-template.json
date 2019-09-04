@@ -1,0 +1,215 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template creates a cross account role for running, scheduling, and stopping processes using ECS. It also enabled Cloudwatch logging for these processes.",
+    "Outputs": {
+        "OneprocdashRoleARN": {
+          "Description": "The ARN of the role that can be assumed by oneprocdash",
+          "Value": {
+              "Fn::GetAtt": [
+                  "executionSchedulingRole",
+                  "Arn"
+              ]
+          }
+        },
+        "TaskExecutionRoleARN": {
+            "Description": "The ARN of the role used for running tasks in ECS",
+            "Value": {
+                "Fn::GetAtt": [
+                    "taskExecutionRole",
+                    "Arn"
+                ]
+            }
+        }
+    },
+    "Parameters": {
+        "ExternalID": {
+            "Description": "The External ID that will be required to assume the role.",
+            "MinLength": "1",
+            "NoEcho": "false",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "executionSchedulingRole": {
+            "Properties": {
+                "Description": "A role that allows oneprocdash to run, schedule, and stop processes in ECS",
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Condition": {
+                                "StringEquals": {
+                                    "sts:ExternalId": {
+                                        "Ref": "ExternalID"
+                                    }
+                                }
+                            },
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::272096445899:root"
+                            }
+                        },
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "events.amazonaws.com"
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ecs:ListClusters",
+                                        "ecs:ListTaskDefinitions",
+                                        "ecs:ListTaskDefinitionFamilies",
+                                        "ecs:RunTask",
+                                        "ecs:StartTask",
+                                        "ecs:StopTask",
+                                        "ecs:CreateService",
+                                        "ecs:UpdateService",
+                                        "ecs:DeleteService",
+                                        "events:DeleteRule",
+                                        "events:DescribeRule",
+                                        "events:DisableRule",
+                                        "events:EnableRule",
+                                        "events:ListRules",
+                                        "events:ListTargetsByRule",
+                                        "events:PutEvents",
+                                        "events:PutRule",
+                                        "events:PutTargets",
+                                        "events:RemoveTargets"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "iam:PassRole",
+                                    "Resource": [
+                                        "*"
+                                    ],
+                                    "Condition": {
+                                        "StringLike": {
+                                            "iam:PassedToService": "ecs-tasks.amazonaws.com"
+                                        }
+                                    }
+                                }
+                            ],
+                            "Version": "2012-10-17"
+                        },
+                        "PolicyName": "OneprocdashRunTasksPolicy"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "taskExecutionRole": {
+            "Properties": {
+                "Description": "A role used for running tasks in ECS, assumed by the executionSchedulingRole",
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::GetAtt": [
+                                        "executionSchedulingRole",
+                                        "Arn"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                              "Service": [
+                                "apigateway.amazonaws.com",
+                                "ecs-tasks.amazonaws.com",
+                                "lambda.amazonaws.com",
+                                "events.amazonaws.com"
+                              ]
+                            }
+
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "Path": "/",
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+                ],
+                "Policies": [
+                    {
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents",
+                                        "logs:DescribeLogStreams"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:logs:*:*:*"
+                                    ]
+                                }
+                            ],
+                            "Version": "2012-10-17"
+                        },
+                        "PolicyName": "OneprocdashCloudwatchLogsPolicy"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "passRolePolicy": {
+            "Type" : "AWS::IAM::ManagedPolicy",
+            "Properties" : {
+                "PolicyDocument" : {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "iam:PassRole",
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "taskExecutionRole",
+                                    "Arn"
+                                ]
+                            }
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": "iam:PassRole",
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "executionSchedulingRole",
+                                    "Arn"
+                                ]
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyName": "OneprocdashPassRolePolicy",
+                "Description": "Allows the oneprocdash role to pass the task execution role to Cloudwatch",
+                "Roles" : [
+                    {
+                        "Ref": "executionSchedulingRole"
+                    }
+                ]
+            }
+        }
+    }
+}
