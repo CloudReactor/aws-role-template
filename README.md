@@ -21,5 +21,5 @@ after entering any options.
 10. On the final page, check the checkbox at the bottom that acknowledges
 that CloudFormat may create IAM resources, and hit "Create Stack".
 11. After the stack is created, select the stack and go to the "Outputs" tab.
-Note the values of the "OneprocdashRolARN" and "TaskExecutionRoleARN" keys,
+Note the values of the "OneprocdashRoleARN" and "TaskExecutionRoleARN" keys,
 to be entered when creating a Run Environment in oneprocdash.
