@@ -10,7 +10,7 @@ It also creates a role to run ECS tasks with support for Cloudwatch logs.
 4. In the "Specify template" section, choose "Upload a template file"
 5. Click the "Choose file" button and select the "oneprocdash-aws-role-template.json" file
 6. Hit the "Next" button
-7. In the "Stack name" section, enter a name like "OneprocdashEcsRoles"
+7. In the "Stack name" section, enter a name like "Oneprocdash"
 8. In the parameters section, under "ExternalId", enter a randomly generated ID that will be used
 to limit access to the roles. Remember the ExternalId value when creating
 a Run Environment in oneprocdash. For more information, see
@@ -19,7 +19,9 @@ a Run Environment in oneprocdash. For more information, see
 All other options on the page are also not required. Hit the "Next" button
 after entering any options.
 10. On the final page, check the checkbox at the bottom that acknowledges
-that CloudFormat may create IAM resources, and hit "Create Stack".
+that CloudFormation may create IAM resources, and hit "Create Stack".
 11. After the stack is created, select the stack and go to the "Outputs" tab.
-Note the values of the "OneprocdashRoleARN" and "TaskExecutionRoleARN" keys,
-to be entered when creating a Run Environment in oneprocdash.
+Note the values of the "OneprocdashRoleARN", "TaskExecutionRoleARN",
+and "WorkflowStarterARN" keys, to be entered when creating a Run Environment
+in oneprocdash. See https://processes.oneprocdash.com/run_environments to create
+and edit your Run Environments.

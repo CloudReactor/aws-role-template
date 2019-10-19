@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "This template creates a cross account role for running, scheduling, and stopping processes using ECS. It also enabled Cloudwatch logging for these processes.",
+    "Description": "This template creates a cross account role for running, scheduling, and stopping Processes and Workflows using ECS and Lambda. It also enables Cloudwatch logging for these Processes.",
     "Outputs": {
         "OneprocdashRoleARN": {
           "Description": "The ARN of the role that can be assumed by oneprocdash",
@@ -12,10 +12,19 @@
           }
         },
         "TaskExecutionRoleARN": {
-            "Description": "The ARN of the role used for running tasks in ECS",
+            "Description": "The ARN of the role used for running tasks in ECS and Lambda",
             "Value": {
                 "Fn::GetAtt": [
                     "taskExecutionRole",
+                    "Arn"
+                ]
+            }
+        },
+        "WorkflowStarterARN": {
+            "Description": "The ARN of the lambda used to start Workflows on a schedule",
+            "Value": {
+                "Fn::GetAtt": [
+                    "workflowStarterLambda",
                     "Arn"
                 ]
             }
@@ -32,7 +41,7 @@
     "Resources": {
         "executionSchedulingRole": {
             "Properties": {
-                "Description": "A role that allows oneprocdash to run, schedule, and stop processes in ECS",
+                "Description": "A role that allows oneprocdash to run, schedule, and stop Processes in ECS and Lambda",
                 "AssumeRolePolicyDocument": {
                     "Statement": [
                         {
@@ -77,7 +86,7 @@
                                         "ecs:ListTaskDefinitionFamilies",
                                         "ecs:RunTask",
                                         "ecs:StartTask",
-                                        "ecs:StopTask",                                        
+                                        "ecs:StopTask",
                                         "ecs:TagResource",
                                         "ecs:UpdateService",
                                         "ecs:UntagResource",
@@ -113,13 +122,19 @@
                         },
                         "PolicyName": "OneprocdashRunTasksPolicy"
                     }
+                ],
+                "Tags": [
+                    {
+                        "Key": "ManagedBy",
+                        "Value": "oneprocdash"
+                    }
                 ]
             },
             "Type": "AWS::IAM::Role"
         },
         "taskExecutionRole": {
             "Properties": {
-                "Description": "A role used for running tasks in ECS, assumed by the executionSchedulingRole",
+                "Description": "A role used for running tasks in ECS and Lambda, assumed by the executionSchedulingRole",
                 "AssumeRolePolicyDocument": {
                     "Statement": [
                         {
@@ -175,6 +190,12 @@
                         },
                         "PolicyName": "OneprocdashCloudwatchLogsPolicy"
                     }
+                ],
+                "Tags": [
+                    {
+                        "Key": "ManagedBy",
+                        "Value": "oneprocdash"
+                    }
                 ]
             },
             "Type": "AWS::IAM::Role"
@@ -207,13 +228,60 @@
                     ],
                     "Version": "2012-10-17"
                 },
-                "ManagedPolicyName": "OneprocdashPassRolePolicy",
+                "ManagedPolicyName": {
+                    "Fn::Join": [
+                        "-",
+                        [
+                            "passRolePolicy",
+                            {
+                                "Ref": "AWS::Region"
+                            }
+                        ]
+                    ]
+                },
                 "Description": "Allows the oneprocdash role to pass the task execution role to Cloudwatch",
                 "Roles" : [
                     {
                         "Ref": "executionSchedulingRole"
                     }
                 ]
+            }
+        },
+        "workflowStarterLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Description": "A function that starts Workflows defined in oneprocdash. Use to schedule Workflows triggered by Cloudwatch Events.",
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "taskExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "import os\nfrom urllib.request import Request, urlopen\nfrom urllib.error import HTTPError\n\ndef handler(event, context):\n    request_url = event['request_url']\n    request_method = event.get('request_method', 'GET')\n    request_body = event.get('request_body', None)\n\n    request_headers = {\n        'User-Agent': 'AWS Lambda',\n        'Accept': 'application/json'\n    }\n\n    if request_body:\n        request_headers['Content-Type'] = 'application/json'\n\n    request_headers.update(event.get('request_headers', {}))\n\n    print(f\"Executing {request_method} to {request_url} ...\")\n    resp = None\n    try:\n        data = None\n        if request_body:\n            data = request_body.encode('utf-8')\n\n        resp=urlopen(Request(request_url, data=data, headers=request_headers, method=request_method))\n        print('Request succeeded')\n        return resp.status\n    except HTTPError as http_error:\n        status = http_error.code\n        resp_body = None\n        try:\n            resp_body = str(http_error.read(1000000))\n        except:\n            print(\"Can't read response body\")\n\n        print(f\"Failed with status {status} with body '{resp_body}'\")\n        raise\n    except:\n        raise\n"
+                },
+                "Runtime": "python3.7",
+                "Timeout": 60,
+                "Tags": [
+                    {
+                        "Key": "ManagedBy",
+                        "Value": "oneprocdash"
+                    }
+                ]
+            }
+        },
+        "workflowStartLambdaInvokePermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "workflowStarterLambda",
+                        "Arn"
+                    ]
+                },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "events.amazonaws.com"
             }
         }
     }
