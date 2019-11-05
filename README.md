@@ -15,12 +15,16 @@ It also creates a role to run ECS tasks with support for Cloudwatch logs.
 to limit access to the roles. Remember the ExternalId value when creating
 a Run Environment in oneprocdash. For more information, see
 [How to Use an External ID When Granting Access to Your AWS Resources to a Third Party](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html).
-9. On the next page, you may enter tags for the stack, but it is not required.
+9. Also the parameters section, under "WorkflowStarterAccessKey", enter another randomly generated ID that will be used
+to validate requests from Cloudwatch to start Workflows on a schedule.
+a Run Environment in oneprocdash. For more information, see
+[How to Use an External ID When Granting Access to Your AWS Resources to a Third Party](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html).  
+10. On the next page, you may enter tags for the stack, but it is not required.
 All other options on the page are also not required. Hit the "Next" button
 after entering any options.
-10. On the final page, check the checkbox at the bottom that acknowledges
+11. On the final page, check the checkbox at the bottom that acknowledges
 that CloudFormation may create IAM resources, and hit "Create Stack".
-11. After the stack is created, select the stack and go to the "Outputs" tab.
+12. After the stack is created, select the stack and go to the "Outputs" tab.
 Note the values of the "OneprocdashRoleARN", "TaskExecutionRoleARN",
 and "WorkflowStarterARN" keys, to be entered when creating a Run Environment
 in oneprocdash. See https://processes.oneprocdash.com/run_environments to create
