@@ -16,7 +16,7 @@ def handler(event, context):
     if access_key != os.environ['URL_REQUESTER_ACCESS_KEY']:
         print("Invalid access key")
         return {
-            'statusCode': 403,
+            'statusCode': 401,
             'body': 'Invalid access key'
         }
 
