@@ -5,7 +5,7 @@ env = Environment(
     loader=FileSystemLoader('./')
 )
 
-template = env.get_template('oneprocdash-aws-role-template.json.j2')
+template = env.get_template('cloudreactor-aws-role-template.json.j2')
 
 with open('url_requester.py', 'r') as f:
     url_requester_contents = f.read()
@@ -16,7 +16,7 @@ data = {
 
 output = template.render(data)
 
-output_filename = 'oneprocdash-aws-role-template.json'
+output_filename = 'cloudreactor-aws-role-template.json'
 
 with open(output_filename, 'w') as f:
     f.write(output)

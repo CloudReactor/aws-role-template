@@ -22,7 +22,7 @@ def handler(event, context):
 
     hostname = parsed.hostname
 
-    if not hostname.endswith('.oneprocdash.com'):
+    if not hostname.endswith('.cloudreactor.io'):
         print("Invalid hostname")
         return {
             'statusCode': 400,

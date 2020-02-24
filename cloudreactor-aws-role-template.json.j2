@@ -2,8 +2,8 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "This template creates a cross account role for running, scheduling, and stopping Processes and Workflows using ECS and Lambda. It also enables Cloudwatch logging for these Processes.",
     "Outputs": {
-        "OneprocdashRoleARN": {
-          "Description": "The ARN of the role that can be assumed by oneprocdash",
+        "CloudreactorRoleARN": {
+          "Description": "The ARN of the role that can be assumed by CloudReactor",
           "Value": {
               "Fn::GetAtt": [
                   "executionSchedulingRole",
@@ -24,7 +24,7 @@
             "Description": "The ARN of the lambda used to start Workflows on a schedule",
             "Value": {
                 "Fn::GetAtt": [
-                    "workflowStarterLambda",
+                    "cloudreactorWorkflowStarterLambda",
                     "Arn"
                 ]
             }
@@ -47,7 +47,7 @@
     "Resources": {
         "executionSchedulingRole": {
             "Properties": {
-                "Description": "A role that allows oneprocdash to run, schedule, and stop Processes in ECS and Lambda",
+                "Description": "A role that allows CloudReactor to run, schedule, and stop Processes in ECS and Lambda",
                 "AssumeRolePolicyDocument": {
                     "Statement": [
                         {
@@ -61,7 +61,7 @@
                             },
                             "Effect": "Allow",
                             "Principal": {
-                                "AWS": "arn:aws:iam::272096445899:root"
+                                "AWS": "arn:aws:iam::549277324696:root"
                             }
                         },
                         {
@@ -126,13 +126,13 @@
                             ],
                             "Version": "2012-10-17"
                         },
-                        "PolicyName": "OneprocdashRunTasksPolicy"
+                        "PolicyName": "CloudreactorRunTasksPolicy"
                     }
                 ],
                 "Tags": [
                     {
                         "Key": "ManagedBy",
-                        "Value": "oneprocdash"
+                        "Value": "CloudReactor"
                     }
                 ]
             },
@@ -194,13 +194,13 @@
                             ],
                             "Version": "2012-10-17"
                         },
-                        "PolicyName": "OneprocdashCloudwatchLogsPolicy"
+                        "PolicyName": "CloudreactorCloudwatchLogsPolicy"
                     }
                 ],
                 "Tags": [
                     {
                         "Key": "ManagedBy",
-                        "Value": "oneprocdash"
+                        "Value": "CloudReactor"
                     }
                 ]
             },
@@ -238,14 +238,14 @@
                     "Fn::Join": [
                         "-",
                         [
-                            "passRolePolicy",
+                            "cloudreactorPassRolePolicy",
                             {
                                 "Ref": "AWS::Region"
                             }
                         ]
                     ]
                 },
-                "Description": "Allows the oneprocdash role to pass the task execution role to Cloudwatch",
+                "Description": "Allows the CloudReactor role to pass the task execution role to Cloudwatch",
                 "Roles" : [
                     {
                         "Ref": "executionSchedulingRole"
@@ -253,10 +253,10 @@
                 ]
             }
         },
-        "workflowStarterLambda": {
+        "cloudreactorWorkflowStarterLambda": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-                "Description": "A function that starts Workflows defined in oneprocdash. Use to schedule Workflows triggered by Cloudwatch Events.",
+                "Description": "A function that starts Workflows defined in CloudReactor. Use to schedule Workflows triggered by Cloudwatch Events.",
                 "Handler": "index.handler",
                 "Role": {
                     "Fn::GetAtt": [
@@ -265,7 +265,7 @@
                     ]
                 },
                 "Code": {
-                    "ZipFile": "import os\nfrom urllib.request import Request, urlopen\nfrom urllib.parse import urlparse\nfrom urllib.error import HTTPError\n\nMAX_BODY_SIZE = 1000000\n\ndef handler(event, context):\n    request_url = event['request_url']\n    parsed = urlparse(request_url)\n\n    original_request_headers = event.get('request_headers', {})\n\n    access_key = original_request_headers.pop('X-Url-Requester-Access-Key')\n\n    if access_key != os.environ['URL_REQUESTER_ACCESS_KEY']:\n        print(\"Invalid access key\")\n        return {\n            'statusCode': 401,\n            'body': 'Invalid access key'\n        }\n\n    hostname = parsed.hostname\n\n    if not hostname.endswith('.oneprocdash.com'):\n        print(\"Invalid hostname\")\n        return {\n            'statusCode': 400,\n            'body': 'Invalid hostname'\n        }\n\n    request_method = event.get('request_method', 'GET')\n    request_body = event.get('request_body', None)\n\n    request_headers = {\n        'User-Agent': 'AWS Lambda',\n        'Accept': 'application/json'\n    }\n\n    if request_body:\n        request_headers['Content-Type'] = 'application/json'\n\n    request_headers.update(original_request_headers)\n\n    print(f\"Executing {request_method} to {request_url} ...\")\n    resp = None\n    try:\n        data = None\n        if request_body:\n            data = request_body.encode('utf-8')\n        else:\n            data = event.get('query')\n\n        resp=urlopen(Request(request_url, data=data, headers=request_headers, method=request_method))\n        print('Request succeeded')\n        # For now, no need to read response body or headers, since this is executed by Cloudwatch\n        return {\n            'statusCode': resp.status,\n            'body': ''\n        }\n    except HTTPError as http_error:\n        status = http_error.code\n        resp_body = None\n        try:\n            resp_body = str(http_error.read(MAX_BODY_SIZE))\n        except:\n            print(\"Can't read response body\")\n\n        print(f\"Failed with status {status} with body '{resp_body}'\")\n        raise\n"
+                    "ZipFile": {{ url_requester_contents }}
                 },
                 "Runtime": "python3.7",
                 "Environment" : {
@@ -279,7 +279,7 @@
                 "Tags": [
                     {
                         "Key": "ManagedBy",
-                        "Value": "oneprocdash"
+                        "Value": "CloudReactor"
                     }
                 ]
             }
@@ -289,7 +289,7 @@
             "Properties": {
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "workflowStarterLambda",
+                        "cloudreactorWorkflowStarterLambda",
                         "Arn"
                     ]
                 },
