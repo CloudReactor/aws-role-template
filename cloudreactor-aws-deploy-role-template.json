@@ -1,0 +1,189 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template creates a role and a user that can be used to deploy tasks to CloudReactor. It also creates a managed policy you can attach to existing roles or users.",
+    "Outputs": {
+        "CloudreactorDeployerPolicyARN": {
+            "Description": "The ARN of the policy containing permissions required to deploy tasks to CloudReactor",
+            "Value": {
+                "Ref": "deployerPolicy",
+            }
+        },
+        "CloudreactorDeployerRoleARN": {
+            "Description": "The ARN of a role that can deploy tasks to CloudReactor",
+            "Value": {
+                "Fn::GetAtt": [
+                    "deployerRole",
+                    "Arn"
+                ]
+            }
+        },
+        "CloudreactorDeployerInstanceProfileARN": {
+            "Description": "The ARN of an instance profile that can deploy tasks to CloudReactor. If you assign an EC2 instance this instance profile, it will be able to deploy to tasks to ECS.",
+            "Value": {
+                "Fn::GetAtt": [
+                    "deployerInstanceProfile",
+                    "Arn"
+                ]
+            }
+        },
+        "CloudreactorDeployerUserARN": {
+            "Description": "The ARN of a user that can deploy tasks to CloudReactor",
+            "Value": {
+                "Fn::GetAtt": [
+                    "deployerUser",
+                    "Arn"
+                ]
+            }
+        },
+        "CloudreactorDeployerAccessKeyId": {
+            "Description": "The access key ID for the cloudreactor-deployer-user",
+            "Value": {
+                "Ref": "deployerUserAccessKey",
+            }
+        },
+        "CloudreactorDeployerAccessKeySecret": {
+            "Description": "The access key secret for the cloudreactor-deployer-user",
+            "Value": {
+                "Fn::GetAtt": [
+                  "deployerUserAccessKey",
+                  "SecretAccessKey"
+                ]
+            }
+        }
+    },
+    "Resources": {
+        "deployerPolicy":  {
+            "Type" : "AWS::IAM::ManagedPolicy",
+            "Properties" : {
+                "PolicyDocument" : {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "ecr:BatchCheckLayerAvailability",
+                                "ecr:CompleteLayerUpload",
+                                "ecr:CreateRepository",
+                                "ecr:DescribeRepositories",
+                                "ecr:GetAuthorizationToken",
+                                "ecr:InitiateLayerUpload",
+                                "ecr:PutImage",
+                                "ecr:UploadLayerPart",
+                                "ecs:RegisterTaskDefinition"
+                            ],
+                            "Resource": [
+                                "*"
+                            ]
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "iam:GetRole",
+                                "iam:PassRole"
+                            ],
+                            "Resource": [
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:iam::",
+                                            {
+                                                "Ref" : "AWS::AccountId"
+                                            },
+                                            ":role/*taskExecutionRole*"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:iam::",
+                                            {
+                                                "Ref" : "AWS::AccountId"
+                                            },
+                                            ":role/*TaskExecutionRole*"
+                                        ]
+                                    ]
+                                },
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyName": "cloudreactorDeployerPolicy",
+                "Description": "A managed policy containing permissions needed to deploy tasks to CloudReactor"
+            }
+        },
+        "deployerRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "Description": "A role that can deploy tasks to CloudReactor",
+                "Path": "/",
+                "AssumeRolePolicyDocument": {
+                    "Version" : "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [ "ec2.amazonaws.com" ]
+                            },
+                            "Action": [ "sts:AssumeRole" ]
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "ds.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    {
+                        "Ref": "deployerPolicy"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "ManagedBy",
+                        "Value": "CloudReactor"
+                    }
+                ]
+            }
+        },
+        "deployerInstanceProfile": {
+           "Type": "AWS::IAM::InstanceProfile",
+           "Properties": {
+              "Path": "/",
+              "Roles": [
+                  {
+                      "Ref": "deployerRole"
+                  }
+              ]
+           }
+        },
+        "deployerUser": {
+            "Type" : "AWS::IAM::User",
+            "Properties" : {
+                "UserName": "cloudreactor-deployer",
+                "ManagedPolicyArns": [
+                    {
+                        "Ref": "deployerPolicy"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "ManagedBy",
+                        "Value": "CloudReactor"
+                    }
+                ]
+            }
+        },
+        "deployerUserAccessKey" : {
+            "Type" : "AWS::IAM::AccessKey",
+            "Properties" : {
+                "UserName" : "cloudreactor-deployer"
+            }
+        }
+    }
+}
