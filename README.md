@@ -3,7 +3,6 @@
 This project contains two CloudFormation templates to set up CloudReactor
 in your AWS account.
 
-1. Click the file `cloudreactor-aws-role-template.json`, select "Raw", and then save this file to your local machine
 1. A template that allows CloudReactor to run processes on your behalf. It also creates a role to run ECS tasks with support for Cloudwatch logs. This template
 is named `cloudreactor-aws-role-template.json`. Uploading this template is required for CloudReactor to work properly.
 
@@ -88,4 +87,4 @@ roles to EC2 instances.
 2. Allow the role to be assumed by other users, which may include developers
 or machine users. If you use AWS Directory Service, you can assign the role to users using the Directory Service directly. Otherwise,
 add an AssumeRolePolicyDocument to the CloudReactor deployer role allowing the user to assume the role,
-and add permission for the user to assume the role. See (Assigning Roles to Users and )[https://docs.aws.amazon.com/directoryservice/latest/admin-guide/assign_role.html]
+and add permission for the user to assume the role. See [Assigning Roles to Users](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/assign_role.html) for detailed instructions.
