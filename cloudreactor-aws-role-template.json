@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "This template creates a cross account role for running, scheduling, and stopping Processes and Workflows using ECS and Lambda. It also enables Cloudwatch logging for these Processes.",
+    "Description": "This template creates a cross account role for running, scheduling, and stopping Tasks and Workflows using ECS and Lambda. It also enables Cloudwatch logging for these Tasks.",
     "Outputs": {
         "CloudreactorRoleARN": {
           "Description": "The ARN of the role that can be assumed by CloudReactor",
@@ -47,7 +47,7 @@
     "Resources": {
         "executionSchedulingRole": {
             "Properties": {
-                "Description": "A role that allows CloudReactor to run, schedule, and stop Processes in ECS and Lambda",
+                "Description": "A role that allows CloudReactor to run, schedule, and stop Tasks in ECS and Lambda",
                 "AssumeRolePolicyDocument": {
                     "Statement": [
                         {
@@ -61,7 +61,7 @@
                             },
                             "Effect": "Allow",
                             "Principal": {
-                                "AWS": "arn:aws:iam::549277324696:root"
+                                "AWS": "arn:aws:iam::549277324696:user/customer_invoker"
                             }
                         },
                         {
