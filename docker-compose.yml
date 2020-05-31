@@ -26,6 +26,15 @@ services:
   make_template:
     <<: *service-base
 
+  upload:
+    <<: *service-base
+    entrypoint: python generator/upload.py
+    environment:
+      - AWS_PROFILE=${AWS_PROFILE}
+    volumes:
+      - .:/usr/app
+      - ~/.aws/:/root/.aws:ro
+
   shell:
     <<: *service-base
     command: bash
