@@ -5,6 +5,7 @@ from urllib.error import HTTPError
 
 MAX_BODY_SIZE = 1000000
 
+
 def handler(event, context):
     request_url = event['request_url']
     parsed = urlparse(request_url)
@@ -43,17 +44,18 @@ def handler(event, context):
     request_headers.update(original_request_headers)
 
     print(f"Executing {request_method} to {request_url} ...")
-    resp = None
+
     try:
-        data = None
         if request_body:
             data = request_body.encode('utf-8')
         else:
             data = event.get('query')
 
-        resp=urlopen(Request(request_url, data=data, headers=request_headers, method=request_method))
+        resp = urlopen(Request(request_url, data=data, headers=request_headers,
+                               method=request_method))
         print('Request succeeded')
-        # For now, no need to read response body or headers, since this is executed by Cloudwatch
+        # For now, no need to read response body or headers,
+        # since this is executed by Cloudwatch.
         return {
             'statusCode': resp.status,
             'body': ''
@@ -63,7 +65,7 @@ def handler(event, context):
         resp_body = None
         try:
             resp_body = str(http_error.read(MAX_BODY_SIZE))
-        except:
+        except IOError:
             print("Can't read response body")
 
         print(f"Failed with status {status} with body '{resp_body}'")
