@@ -4,7 +4,7 @@ This project contains two CloudFormation templates to set up CloudReactor
 in your AWS account. For a complete guide on how to deploy tasks to Fargate
 and CloudReactor, see the [CloudReactor quick start](https://github.com/CloudReactor/cloudreactor-ecs-quickstart) project.
 
-1. A template that allows CloudReactor to run processes on your behalf. It also creates a role to run ECS tasks with support for Cloudwatch logs. This template
+1. A template that allows CloudReactor to run tasks on your behalf. It also creates a role to run ECS tasks with support for Cloudwatch logs. This template
 is named `cloudreactor-aws-role-template.json`. Uploading this template is required for CloudReactor to work properly.
 
 2. A template that specifies the permissions required for you to deploy tasks

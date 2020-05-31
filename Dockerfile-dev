@@ -1,0 +1,8 @@
+FROM aws_role_template
+
+COPY ./generator/dev-requirements.txt .
+
+RUN pip install --no-cache-dir -r dev-requirements.txt
+
+ENTRYPOINT ["flake8", "generator"]
+

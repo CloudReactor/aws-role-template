@@ -1,0 +1,62 @@
+version: "3.7"
+
+x-service-base: &service-base
+  image: aws_role_template
+  build:
+    context: ./
+  volumes:
+    - .:/usr/app
+
+x-dev-base: &dev-base
+  <<: *service-base
+  image:  aws_role_template_dev
+  build:
+    context: ./
+    dockerfile: Dockerfile-dev
+
+x-pip-compile-base: &pip-compile-base
+  image: cloudreactor-aws-role-template-pip-tools
+  build:
+    context: ./
+    dockerfile: tools/pip-tools/Dockerfile
+  volumes:
+    - ./generator:/work
+
+services:
+  make_template:
+    <<: *service-base
+
+  shell:
+    <<: *service-base
+    command: bash
+
+  flake8:
+    <<: *dev-base
+    entrypoint: ["flake8", "generator"]
+
+  mypy:
+    <<: *dev-base
+    entrypoint: ["mypy", "generator"]
+
+  safety:
+    <<: *dev-base
+    entrypoint: ["safety", "check"]
+
+  flake8-src:
+    <<: *dev-base
+    entrypoint: ["flake8", "src/python"]
+
+  mypy-src:
+    <<: *dev-base
+    entrypoint: ["mypy", "src/python"]
+
+  dev-shell:
+    <<: *dev-base
+    command: bash
+
+  pip-compile:
+    <<: *pip-compile-base
+
+  pip-compile-dev:
+    <<: *pip-compile-base
+    command: dev-requirements.in --output-file dev-requirements.txt
