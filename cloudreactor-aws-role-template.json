@@ -61,7 +61,7 @@
                             },
                             "Effect": "Allow",
                             "Principal": {
-                                "AWS": "arn:aws:iam::549277324696:user/customer_invoker"
+                                "AWS": "arn:aws:iam::549277324696:role/customer_invoker"
                             }
                         },
                         {
