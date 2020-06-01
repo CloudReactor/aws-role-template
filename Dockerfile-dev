@@ -4,5 +4,5 @@ COPY ./generator/dev-requirements.txt .
 
 RUN pip install --no-cache-dir -r dev-requirements.txt
 
-ENTRYPOINT ["flake8", "generator"]
+ENTRYPOINT ["flake8", "--config", "generator/.flake8", "generator"]
 
