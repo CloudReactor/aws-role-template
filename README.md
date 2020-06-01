@@ -15,7 +15,6 @@ admin user or power user to deploy tasks.
 
 ## Allowing CloudReactor to manage your tasks
 
-
 1. In the AWS console, go to CloudFormation. Ensure you are in the AWS region
 you want to run your tasks in. You can change the region by selecting the
 Region dropdown in the top right menu bar.
@@ -24,7 +23,7 @@ Region dropdown in the top right menu bar.
 4. In the "Specify template" section, choose "Amazon S3 URL" (which should be selected by default).
 In the "Amazon S3 URL" field, enter:
 
-    https://customer-setup-files.s3-us-west-2.amazonaws.com/cloudreactor-aws-role-template.json
+    https://cloudreactor-customer-setup.s3-us-west-2.amazonaws.com/cloudreactor-aws-role-template.json
   
 5. Hit the "Next" button
 6. In the "Stack name" section, enter a name like "CloudReactor"
@@ -63,18 +62,21 @@ To create these resources, follow these steps:
 
 1. In the AWS console, go to CloudFormation. Note that the region doesn't
 matter as we are creating IAM resources.
-2. In the Stacks section, click the "Create Stack" button.
+2. In the Stacks section, click the "Create Stack" button and select "With new resources (standard)"
 3. In the "Prerequisite - Prepare Template" section, choose "Template is ready"
-4. In the "Specify template" section, choose "Upload a template file"
-5. Click the "Choose file" button and select the "cloudreactor-aws-deploy-role-template.json" file
-6. Hit the "Next" button
-7. In the "Stack name" section, enter a name like "CloudReactor-deploy"
-8. On the next page, you may enter tags for the stack, but it is not required.
+4. In the "Specify template" section, choose "Amazon S3 URL" (which should be selected by default).
+In the "Amazon S3 URL" field, enter:
+
+    https://cloudreactor-customer-setup.s3-us-west-2.amazonaws.com/cloudreactor-aws-deploy-role-template.json  
+    
+5. Hit the "Next" button
+6. In the "Stack name" section, enter a name like "CloudReactor-deployer"
+7. On the next page, you may enter tags for the stack, but it is not required.
 All other options on the page are also not required. Hit the "Next" button
 after entering any options.
-9. On the final page, check the checkbox at the bottom that acknowledges
+8. On the final page, check the checkbox at the bottom that acknowledges
 that CloudFormation may create IAM resources, and hit "Create Stack".
-10. After the stack is created, select the stack and go to the "Outputs" tab.
+9. After the stack is created, select the stack and go to the "Outputs" tab.
 You can now use the CloudreactorDeployerAccessKeyId value as the access key
 (AWS_ACCESS_KEY_ID environment variable) and
 the CloudreactorDeployerAccessKeySecret value as the secret key (AWS_SECRET_ACCESS_KEY environment variable) to configure
@@ -88,7 +90,7 @@ instance can speed up deployments because it is deployed in Amazon's network,
 so pushing images is much faster than doing it from developer machines.
 See [IAM Roles for Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) for instructions on how to assign
 roles to EC2 instances.
-2. Allow the role to be assumed by other users, which may include developers
-or machine users. If you use AWS Directory Service, you can assign the role to users using the Directory Service directly. Otherwise,
+2. Allow the role to be assumed by other users, which may include developers,
+machine users, or groups. If you use AWS Directory Service, you can assign the role to users using the Directory Service directly. Otherwise,
 add an AssumeRolePolicyDocument to the CloudReactor deployer role allowing the user to assume the role,
 and add permission for the user to assume the role. See [Assigning Roles to Users](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/assign_role.html) for detailed instructions.

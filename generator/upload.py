@@ -44,7 +44,7 @@ if __name__ == '__main__':
         bucket_suffix = "-" + deployment_environment
         file_suffix = "." + deployment_environment
 
-    bucket_name = 'customer-setup-files' + bucket_suffix
+    bucket_name = 'cloudreactor-customer-setup' + bucket_suffix
 
     print(f"Uploading to bucket '{bucket_name}' ...")
 
