@@ -1,5 +1,7 @@
 # aws-role-template
 
+![Tests](https://github.com/CloudReactor/aws-role-template/workflows/Tests/badge.svg)
+
 This project contains two CloudFormation templates to set up CloudReactor
 in your AWS account. For a complete guide on how to deploy tasks to Fargate
 and CloudReactor, see the [CloudReactor quick start](https://github.com/CloudReactor/cloudreactor-ecs-quickstart) project.
