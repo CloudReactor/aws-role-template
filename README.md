@@ -32,7 +32,7 @@ after entering any options.
 8. On the final page, check the checkbox at the bottom that acknowledges
 that CloudFormation may create IAM resources, and hit "Create Stack".
 9. After the stack is created, select the stack and go to the "Outputs" tab. You can now use the CloudreactorDeployerAccessKeyId value as the access key
-(AWS_ACCESS_KEY_ID environment variable) and the CloudreactorDeployerAccessKeySecret value as the secret key (AWS_SECRET_ACCESS_KEY environment variable) in the CloudReactor quickstart repo configuration file at `deploy/docker_deploy.env`.
+(AWS_ACCESS_KEY_ID environment variable) and the CloudreactorDeployerAccessKeySecret value as the secret key (AWS_SECRET_ACCESS_KEY environment variable) in the CloudReactor quickstart repo configuration file at `deploy/docker_deploy.env` (or, if you're deploying to ECS / CloudReactor via native deployment, you'd configure the AWS CLI with these keys)
 
 If you don't want to use access keys, you can use the role that is output.
 There are two ways of using the role:
