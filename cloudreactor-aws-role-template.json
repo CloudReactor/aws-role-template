@@ -33,13 +33,21 @@
     "Parameters": {
         "ExternalID": {
             "Description": "The External ID that will be required to assume the role.",
-            "MinLength": "1",
+            "MinLength": "8",
             "NoEcho": "false",
             "Type": "String"
         },
         "WorkflowStarterAccessKey": {
             "Description": "The access key used to authenticate requests to start Workflows on a schedule.",
+            "MinLength": "8",
+            "NoEcho": "false",
+            "Type": "String"
+        },
+        "CloudwatchLogGroupPattern": {
+            "Description": "A matching string for the names of Cloudwatch Log Groups that Tasks are allowed to write to. It should normally end in '*' so that arbitrary Log Groups can be created, after a prefix.",
+            "Default": "*",
             "MinLength": "1",
+            "MaxLength": "512",
             "NoEcho": "false",
             "Type": "String"
         }
@@ -188,7 +196,23 @@
                                         "logs:DescribeLogStreams"
                                     ],
                                     "Resource": [
-                                        "arn:aws:logs:*:*:*"
+                                        {
+                                            "Fn::Join": [
+                                                ":",
+                                                [
+                                                    "arn:aws:logs",
+                                                    {
+                                                        "Ref": "AWS::Region"
+                                                    },
+                                                    {
+                                                        "Ref": "AWS::AccountId"
+                                                    },
+                                                    {
+                                                        "Ref": "CloudwatchLogGroupPattern"
+                                                    }
+                                                ]
+                                            ]
+                                        }
                                     ]
                                 }
                             ],
