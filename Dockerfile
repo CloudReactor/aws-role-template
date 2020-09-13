@@ -1,18 +1,18 @@
 # Alpine base image can lead to long compilation times and errors.
 # https://pythonspeed.com/articles/base-image-python-docker-images/
-FROM python:3.8.3-buster
+FROM python:3.8.5-buster
 
 LABEL maintainer="jeff@cloudreactor.io"
 
 WORKDIR /usr/app
 
-RUN pip install --no-cache-dir --upgrade pip==20.1.1
+RUN pip install --no-input --no-cache-dir --upgrade pip==20.2.3
 
 COPY generator/requirements.txt .
 
 # install dependencies
 # https://stackoverflow.com/questions/45594707/what-is-pips-no-cache-dir-good-for
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-input --no-cache-dir -r requirements.txt
 
 # Output directly to the terminal to prevent logs from being lost
 # https://stackoverflow.com/questions/59812009/what-is-the-use-of-pythonunbuffered-in-docker-file
