@@ -14,14 +14,6 @@ x-dev-base: &dev-base
     context: ./
     dockerfile: Dockerfile-dev
 
-x-pip-compile-base: &pip-compile-base
-  image: cloudreactor-aws-role-template-pip-tools
-  build:
-    context: ./
-    dockerfile: tools/pip-tools/Dockerfile
-  volumes:
-    - ./generator:/work
-
 services:
   make_template:
     <<: *service-base
@@ -64,10 +56,3 @@ services:
   dev-shell:
     <<: *dev-base
     command: bash
-
-  pip-compile:
-    <<: *pip-compile-base
-
-  pip-compile-dev:
-    <<: *pip-compile-base
-    command: dev-requirements.in --output-file dev-requirements.txt

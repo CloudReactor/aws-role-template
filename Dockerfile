@@ -7,8 +7,12 @@ LABEL maintainer="jeff@cloudreactor.io"
 WORKDIR /usr/app
 
 RUN pip install --no-input --no-cache-dir --upgrade pip==20.2.3
+RUN pip install --no-input --no-cache-dir pip-tools==5.1.2
 
-COPY generator/requirements.txt .
+COPY generator/requirements.in .
+
+RUN pip-compile --allow-unsafe --generate-hashes requirements.in \
+  --output-file requirements.txt
 
 # install dependencies
 # https://stackoverflow.com/questions/45594707/what-is-pips-no-cache-dir-good-for
