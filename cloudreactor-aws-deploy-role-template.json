@@ -5,7 +5,7 @@
         "CloudreactorDeployerPolicyARN": {
             "Description": "The ARN of the policy containing permissions required to deploy tasks to CloudReactor",
             "Value": {
-                "Ref": "deployerPolicy",
+                "Ref": "deployerPolicy"
             }
         },
         "CloudreactorDeployerRoleARN": {
@@ -104,7 +104,7 @@
                                             ":role/*TaskExecutionRole*"
                                         ]
                                     ]
-                                },
+                                }
                             ]
                         }
                     ],

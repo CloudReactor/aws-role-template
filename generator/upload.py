@@ -1,30 +1,53 @@
 import argparse
 import logging
+import os
+import sys
 
 import boto3
 from botocore.exceptions import ClientError
 
 
-def upload_file(file_name: str, bucket: str, object_name: str = None):
+def upload_file(file_name_prefix: str, bucket_prefix: str,
+        version: str, deployment_environment: str, qualify_file_name: bool):
     """Upload a file to an S3 bucket
 
     :param file_name: File to upload
     :param bucket: Bucket to upload to
     :param object_name: S3 object name. If not specified then file_name is used
+    :param qualify_file_name: If true, add the deployment environment to the filename
     :return: True if file was uploaded, else False
     """
+    first_dot_index = version.find('.')
+    major_version = version[:first_dot_index]
 
-    # If S3 object_name was not specified, use file_name
-    if object_name is None:
-        object_name = file_name
+    file_name = file_name_prefix
+    bucket = bucket_prefix
+    deployment_qualifier = ''
 
-    # Upload the file
-    s3_client = boto3.client('s3')
-    try:
-        s3_client.upload_file(file_name, bucket, object_name)
-    except ClientError as e:
-        logging.error(e)
-        return False
+    if deployment_environment and (deployment_environment != 'production'):
+        bucket += '-' + deployment_environment
+        deployment_qualifier = '.' + deployment_environment
+
+    if qualify_file_name:
+        file_name += deployment_qualifier
+
+    file_name += '.json'
+
+    full_version_object_name = file_name_prefix + '-' + version \
+            + deployment_qualifier + '.json'
+    major_version_object_name = file_name_prefix + '-' + major_version \
+            + deployment_qualifier + '.json'
+
+    # Upload the files
+    for object_name in [full_version_object_name, major_version_object_name]:
+      logging.info(f"Uploading {object_name} to {bucket} ...")
+      s3_client = boto3.client('s3')
+      try:
+          s3_client.upload_file(file_name, bucket, object_name)
+      except ClientError as e:
+          logging.error(e)
+          return False
+
     return True
 
 
@@ -38,17 +61,24 @@ if __name__ == '__main__':
 
     deployment_environment = args.environment
 
-    bucket_suffix = ''
-    file_suffix = ''
-    if deployment_environment and (deployment_environment != 'production'):
-        bucket_suffix = "-" + deployment_environment
-        file_suffix = "." + deployment_environment
+    with open('version.txt', 'r') as f:
+        version = f.read().strip()
 
-    bucket_name = 'cloudreactor-customer-setup' + bucket_suffix
+    if not version:
+        print('version.txt could not be read')
+        sys.exit(-1)
 
-    print(f"Uploading to bucket '{bucket_name}' ...")
+    print(f"Read {version=}")
 
-    upload_file(f"cloudreactor-aws-role-template{file_suffix}.json", bucket_name)
-    upload_file('cloudreactor-aws-deploy-role-template.json', bucket_name)
+    bucket_prefix = 'cloudreactor-customer-setup'
 
-    print(f"Done uploading to bucket '{bucket_name}'.")
+    upload_file(f"cloudreactor-aws-role-template",
+            bucket_prefix=bucket_prefix,
+            deployment_environment=deployment_environment,
+            version=version, qualify_file_name=True)
+    upload_file(f'cloudreactor-aws-deploy-role-template',
+            bucket_prefix=bucket_prefix,
+            deployment_environment=deployment_environment,
+            version='1.0.0', qualify_file_name=False)
+
+    print(f"Done uploading.")

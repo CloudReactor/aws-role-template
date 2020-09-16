@@ -31,15 +31,25 @@
         }
     },
     "Parameters": {
+        "DeploymentEnvironment": {
+            "Description": "The name of the deployment environment, e.g. 'staging' or 'production'. Must consist only of alphanumeric characters.",
+            "MinLength": "1",
+            "MaxLength": "128",
+            "AllowedPattern": "[a-zA-Z0-9]+",
+            "NoEcho": "false",
+            "Type": "String"
+        },
         "ExternalID": {
             "Description": "The External ID that will be required to assume the role.",
             "MinLength": "8",
+            "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
         },
         "WorkflowStarterAccessKey": {
             "Description": "The access key used to authenticate requests to start Workflows on a schedule.",
             "MinLength": "8",
+            "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
         },
@@ -48,6 +58,15 @@
             "Default": "*",
             "MinLength": "1",
             "MaxLength": "512",
+            "NoEcho": "false",
+            "Type": "String"
+        },
+        "SecretsPathPrefix": {
+            "Description": "A prefix for secret name paths in Secrets Manager. Tasks using the default Task Execution Role will have access to secrets with paths beginning with '[SecretsPathPrefix][DeploymentEnvironment]/common/*'.",
+            "AllowedPattern": "[a-zA-Z0-9_/+=.@-]*",
+            "Default": "CloudReactor/",
+            "MinLength": "0",
+            "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
         }
@@ -134,10 +153,30 @@
                             ],
                             "Version": "2012-10-17"
                         },
-                        "PolicyName": "CloudreactorRunTasksPolicy"
+                        "PolicyName":  {
+                            "Fn::Join": [
+                                "-",
+                                [
+                                    "CloudreactorRunTasksPolicy",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    {
+                                        "Ref": "DeploymentEnvironment"
+                                    }
+                                ]
+                            ]
+                        }
+
                     }
                 ],
                 "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": {
+                            "Ref": "DeploymentEnvironment"
+                        }
+                    },
                     {
                         "Key": "ManagedBy",
                         "Value": "CloudReactor"
@@ -214,14 +253,64 @@
                                             ]
                                         }
                                     ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "secretsmanager:GetSecretValue"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:secretsmanager:",
+                                                    {
+                                                        "Ref": "AWS::Region"
+                                                    },
+                                                    ":",
+                                                    {
+                                                        "Ref": "AWS::AccountId"
+                                                    },
+                                                    ":secret:",
+                                                    {
+                                                        "Ref": "SecretsPathPrefix"
+                                                    },
+                                                    {
+                                                        "Ref": "DeploymentEnvironment"
+                                                    },
+                                                    "/common/*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
                                 }
                             ],
                             "Version": "2012-10-17"
                         },
-                        "PolicyName": "CloudreactorCloudwatchLogsPolicy"
+                        "PolicyName": {
+                            "Fn::Join": [
+                                "-",
+                                [
+                                    "CloudreactorDefaultTaskExecutionPolicy",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    {
+                                        "Ref": "DeploymentEnvironment"
+                                    }
+                                ]
+                            ]
+                        }
                     }
                 ],
                 "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": {
+                            "Ref": "DeploymentEnvironment"
+                        }
+                    },
                     {
                         "Key": "ManagedBy",
                         "Value": "CloudReactor"
@@ -230,8 +319,8 @@
             },
             "Type": "AWS::IAM::Role"
         },
-        "passRolePolicy": {
-            "Type" : "AWS::IAM::ManagedPolicy",
+        "passRolePolicyUnmanaged": {
+            "Type" : "AWS::IAM::Policy",
             "Properties" : {
                 "PolicyDocument" : {
                     "Statement": [
@@ -258,18 +347,20 @@
                     ],
                     "Version": "2012-10-17"
                 },
-                "ManagedPolicyName": {
+                "PolicyName": {
                     "Fn::Join": [
                         "-",
                         [
-                            "cloudreactorPassRolePolicy",
+                            "CloudreactorPassRolePolicy",
                             {
                                 "Ref": "AWS::Region"
+                            },
+                            {
+                                "Ref": "DeploymentEnvironment"
                             }
                         ]
                     ]
                 },
-                "Description": "Allows the CloudReactor role to pass the task execution role to Cloudwatch",
                 "Roles" : [
                     {
                         "Ref": "executionSchedulingRole"
@@ -301,6 +392,12 @@
                 },
                 "Timeout": 60,
                 "Tags": [
+                    {
+                        "Key": "Environment",
+                        "Value": {
+                            "Ref": "DeploymentEnvironment"
+                        }
+                    },
                     {
                         "Key": "ManagedBy",
                         "Value": "CloudReactor"
