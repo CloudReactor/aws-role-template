@@ -1,6 +1,5 @@
 import argparse
 import logging
-import os
 import sys
 
 import boto3
@@ -40,13 +39,13 @@ def upload_file(file_name_prefix: str, bucket_prefix: str,
 
     # Upload the files
     for object_name in [full_version_object_name, major_version_object_name]:
-      logging.info(f"Uploading {object_name} to {bucket} ...")
-      s3_client = boto3.client('s3')
-      try:
-          s3_client.upload_file(file_name, bucket, object_name)
-      except ClientError as e:
-          logging.error(e)
-          return False
+        logging.info(f"Uploading {object_name} to {bucket} ...")
+        s3_client = boto3.client('s3')
+        try:
+            s3_client.upload_file(file_name, bucket, object_name)
+        except ClientError as e:
+            logging.error(e)
+            return False
 
     return True
 
@@ -72,13 +71,13 @@ if __name__ == '__main__':
 
     bucket_prefix = 'cloudreactor-customer-setup'
 
-    upload_file(f"cloudreactor-aws-role-template",
+    upload_file("cloudreactor-aws-role-template",
             bucket_prefix=bucket_prefix,
             deployment_environment=deployment_environment,
             version=version, qualify_file_name=True)
-    upload_file(f'cloudreactor-aws-deploy-role-template',
+    upload_file('cloudreactor-aws-deploy-role-template',
             bucket_prefix=bucket_prefix,
             deployment_environment=deployment_environment,
             version='1.0.0', qualify_file_name=False)
 
-    print(f"Done uploading.")
+    print("Done uploading.")
