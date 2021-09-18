@@ -38,7 +38,7 @@
         "CloudreactorDeployerAccessKeyId": {
             "Description": "The access key ID for the cloudreactor-deployer-user",
             "Value": {
-                "Ref": "deployerUserAccessKey",
+                "Ref": "deployerUserAccessKey"
             }
         },
         "CloudreactorDeployerAccessKeySecret": {
@@ -49,6 +49,17 @@
                   "SecretAccessKey"
                 ]
             }
+        }
+    },
+    "Parameters": {
+        "SecretsPathPrefix": {
+            "Description": "A path prefix which can limit the secret values the deployer role can modify",
+            "AllowedPattern": "[a-zA-Z0-9_/+=.@-]*",
+            "Default": "",
+            "MinLength": "0",
+            "MaxLength": "128",
+            "NoEcho": "false",
+            "Type": "String"
         }
     },
     "Resources": {
@@ -77,6 +88,54 @@
                         {
                             "Effect": "Allow",
                             "Action": [
+                                "secretsmanager:CancelRotateSecret",
+                                "secretsmanager:CreateSecret",
+                                "secretsmanager:DeleteResourcePolicy",
+                                "secretsmanager:DeleteSecret",
+                                "secretsmanager:DescribeSecret",
+                                "secretsmanager:GetRandomPassword",
+                                "secretsmanager:GetResourcePolicy",
+                                "secretsmanager:GetSecretValue",
+                                "secretsmanager:ListSecretVersionIds",
+                                "secretsmanager:PutResourcePolicy",
+                                "secretsmanager:PutSecretValue",
+                                "secretsmanager:RemoveRegionsFromReplication",
+                                "secretsmanager:ReplicateSecretToRegions",
+                                "secretsmanager:RestoreSecret",
+                                "secretsmanager:RotateSecret",
+                                "secretsmanager:StopReplicationToReplica",
+                                "secretsmanager:TagResource",
+                                "secretsmanager:UntagResource",
+                                "secretsmanager:UpdateSecret",
+                                "secretsmanager:UpdateSecretVersionStage",
+                                "secretsmanager:ValidateResourcePolicy"
+                            ],
+                            "Resource": [
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:secretsmanager:",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            ":",
+                                            {
+                                                "Ref" : "AWS::AccountId"
+                                            },
+                                            ":secret:",
+                                            {
+                                                "Ref": "SecretsPathPrefix"
+                                            },
+                                            "*"
+                                        ]
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
                                 "iam:GetRole",
                                 "iam:PassRole"
                             ],
@@ -89,24 +148,14 @@
                                             {
                                                 "Ref" : "AWS::AccountId"
                                             },
-                                            ":role/*taskExecutionRole*"
-                                        ]
-                                    ]
-                                },
-                                {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "arn:aws:iam::",
-                                            {
-                                                "Ref" : "AWS::AccountId"
-                                            },
-                                            ":role/*TaskExecutionRole*"
+                                            ":role/*"
                                         ]
                                     ]
                                 }
                             ]
                         }
+
+
                     ],
                     "Version": "2012-10-17"
                 },
