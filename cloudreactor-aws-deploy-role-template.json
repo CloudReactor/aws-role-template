@@ -231,7 +231,9 @@
         "deployerUserAccessKey" : {
             "Type" : "AWS::IAM::AccessKey",
             "Properties" : {
-                "UserName" : "cloudreactor-deployer"
+                "UserName" : {
+                    "Ref": "deployerUser"
+                }
             }
         }
     }
