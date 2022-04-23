@@ -36,9 +36,17 @@ def upload_file(file_name_prefix: str, bucket_prefix: str,
             + deployment_qualifier + '.json'
     major_version_object_name = file_name_prefix + '-' + major_version \
             + deployment_qualifier + '.json'
+    latest_version_object_name = file_name_prefix \
+            + deployment_qualifier + '.json'
+
+    filenames = [
+        full_version_object_name,
+        major_version_object_name,
+        latest_version_object_name
+    ]
 
     # Upload the files
-    for object_name in [full_version_object_name, major_version_object_name]:
+    for object_name in filenames:
         logging.info(f"Uploading {object_name} to {bucket} ...")
         s3_client = boto3.client('s3')
         try:
@@ -78,6 +86,6 @@ if __name__ == '__main__':
     upload_file('cloudreactor-aws-deploy-role-template',
             bucket_prefix=bucket_prefix,
             deployment_environment=deployment_environment,
-            version='1.0.0', qualify_file_name=False)
+            version='1.0.1', qualify_file_name=False)
 
     print("Done uploading.")
