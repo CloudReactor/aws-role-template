@@ -21,7 +21,7 @@
             }
         },
         "WorkflowStarterARN": {
-            "Description": "The ARN of the lambda used to start Workflows on a schedule",
+            "Description": "The ARN of the Lambda used to start Workflows on a schedule",
             "Value": {
                 "Fn::GetAtt": [
                     "cloudreactorWorkflowStarterLambda",
@@ -36,6 +36,15 @@
             "MinLength": "1",
             "MaxLength": "128",
             "AllowedPattern": "[a-zA-Z0-9]+",
+            "NoEcho": "false",
+            "Type": "String"
+        },
+        "LambdaPathPrefix": {
+            "Description": "A prefix for Lambda function names that are allowed to be invoked by CloudReactor. This may be used to prevent CloudReactor from invoking sensitive functions.",
+            "AllowedPattern": "[a-zA-Z0-9_/+=.@-]*",
+            "Default": "",
+            "MinLength": "0",
+            "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
         },
@@ -149,6 +158,35 @@
                                             "iam:PassedToService": "ecs-tasks.amazonaws.com"
                                         }
                                     }
+                                },
+                                                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+
+                                                    "arn:aws:lambda:",
+                                                    {
+                                                        "Ref": "AWS::Region"
+                                                    },
+                                                    ":",
+                                                    {
+                                                        "Ref": "AWS::AccountId"
+                                                    },
+                                                    ":function:",
+                                                    {
+                                                        "Ref": "LambdaPathPrefix"
+                                                    },
+                                                    "*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
                                 }
                             ],
                             "Version": "2012-10-17"

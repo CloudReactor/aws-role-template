@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "This template creates a cross account role for running, scheduling, and stopping Tasks and Workflows using ECS and Lambda. It also enables Cloudwatch logging for these Tasks.",
+    "Description": "This template creates a cross-account role (assumable by CloudReactor) for running, scheduling, and stopping Tasks and Workflows using ECS and Lambda. It also enables Cloudwatch logging for these Tasks.",
     "Outputs": {
         "CloudreactorRoleARN": {
           "Description": "The ARN of the role that can be assumed by CloudReactor",
@@ -21,7 +21,7 @@
             }
         },
         "WorkflowStarterARN": {
-            "Description": "The ARN of the lambda used to start Workflows on a schedule",
+            "Description": "The ARN of the Lambda used to start Workflows on a schedule",
             "Value": {
                 "Fn::GetAtt": [
                     "cloudreactorWorkflowStarterLambda",
@@ -32,20 +32,33 @@
     },
     "Parameters": {
         "DeploymentEnvironment": {
-            "Description": "The name of the deployment environment, e.g. 'staging' or 'production'.",
+            "Description": "The name of the deployment environment, e.g. 'staging' or 'production'. Must consist only of alphanumeric characters.",
             "MinLength": "1",
+            "MaxLength": "128",
+            "AllowedPattern": "[a-zA-Z0-9]+",
+            "NoEcho": "false",
+            "Type": "String"
+        },
+        "LambdaPathPrefix": {
+            "Description": "A prefix for Lambda function names that are allowed to be invoked by CloudReactor. This may be used to prevent CloudReactor from invoking sensitive functions.",
+            "AllowedPattern": "[a-zA-Z0-9_/+=.@-]*",
+            "Default": "",
+            "MinLength": "0",
+            "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
         },
         "ExternalID": {
             "Description": "The External ID that will be required to assume the role.",
             "MinLength": "8",
+            "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
         },
         "WorkflowStarterAccessKey": {
             "Description": "The access key used to authenticate requests to start Workflows on a schedule.",
             "MinLength": "8",
+            "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
         },
@@ -54,6 +67,15 @@
             "Default": "*",
             "MinLength": "1",
             "MaxLength": "512",
+            "NoEcho": "false",
+            "Type": "String"
+        },
+        "SecretsPathPrefix": {
+            "Description": "A prefix for secret name paths in Secrets Manager. Tasks using the default Task Execution Role will have access to secrets with paths beginning with '[SecretsPathPrefix][DeploymentEnvironment]/common/*'.",
+            "AllowedPattern": "[a-zA-Z0-9_/+=.@-]*",
+            "Default": "CloudReactor/",
+            "MinLength": "0",
+            "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
         }
@@ -136,6 +158,35 @@
                                             "iam:PassedToService": "ecs-tasks.amazonaws.com"
                                         }
                                     }
+                                },
+                                                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+
+                                                    "arn:aws:lambda:",
+                                                    {
+                                                        "Ref": "AWS::Region"
+                                                    },
+                                                    ":",
+                                                    {
+                                                        "Ref": "AWS::AccountId"
+                                                    },
+                                                    ":function:",
+                                                    {
+                                                        "Ref": "LambdaPathPrefix"
+                                                    },
+                                                    "*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
                                 }
                             ],
                             "Version": "2012-10-17"
@@ -259,8 +310,10 @@
                                                     {
                                                         "Ref": "AWS::AccountId"
                                                     },
-                                                    ":",
-                                                    "secret:CloudReactor/",
+                                                    ":secret:",
+                                                    {
+                                                        "Ref": "SecretsPathPrefix"
+                                                    },
                                                     {
                                                         "Ref": "DeploymentEnvironment"
                                                     },

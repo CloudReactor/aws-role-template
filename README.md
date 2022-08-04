@@ -4,13 +4,17 @@
 
 This project contains two CloudFormation templates that can be used to set up CloudReactor in your AWS account.
 
-1. [Allowing CloudReactor to manage tasks in your ECS environment](#allowing-cloudreactor-to-manage-your-tasks):
-If you did NOT use the [AWS Setup Wizard](https://github.com/CloudReactor/cloudreactor-aws-setup-wizard), i.e. you want to [set up CloudReactor manually](https://docs.cloudreactor.io/manual_setup.html#optional-set-aws-role-permissions-to-allow-cloudreactor-to-stop-start-and-schedule-ecs-tasks), this role template must be installed to allow CloudReactor to start / stop your ECS tasks.
+1. [Allowing CloudReactor to manage your ECS tasks and AWS Lambda functions](#allowing-cloudreactor-to-manage-your-tasks):
+If you did NOT use the [AWS Setup Wizard](https://github.com/CloudReactor/cloudreactor-aws-setup-wizard), i.e. you want to [set up CloudReactor manually](https://docs.cloudreactor.io/manual_setup.html#optional-set-aws-role-permissions-to-allow-cloudreactor-to-stop-start-and-schedule-ecs-tasks), this role template must be installed to allow CloudReactor to start your ECS tasjs or Lambda functions.
 2. [Deployer policy](#deployer-policy-role-and-user): If you arrived here after following the CloudReactor [Getting Started](https://docs.cloudreactor.io/#optional-setting-up-a-new-aws-user-with-deployment-permissions) guide, this will let you create a special user and role that has the minimum permissions required to deploy tasks to ECS. Once this user / role is created, you can enter the credentials into the CloudReactor quickstart repo configuration file at `deploy/docker_deploy.env`. CloudReactor will then assume this role when deploying tasks.
 
-## Allowing CloudReactor to manage your tasks
+## Allowing CloudReactor to manage your ECS tasks and Lambda functions
 
-Installing this template is only required if you want to use CloudReactor to manage your tasks, but want to complete setup manually (i.e. you don't want to use the CloudReactor [AWS Setup Wizard](https://docs.cloudreactor.io/#set-up-aws-infrastructure-link-to-cloudreactor)). If you've used the AWS Setup Wizard, you can ignore this section!
+Installing this template is only required if you want to use CloudReactor to
+manage your ECS tasks and Lambda functions, but want to complete setup manually
+(i.e. you don't want to use the CloudReactor
+[AWS Setup Wizard](https://docs.cloudreactor.io/#set-up-aws-infrastructure-link-to-cloudreactor)).
+If you've used the AWS Setup Wizard, you can ignore this section!
 
 1. In the AWS console, go to CloudFormation. Ensure you are in the AWS region
 you want to run your tasks in. You can change the region by selecting the
@@ -48,8 +52,7 @@ bar, then redo the steps above.
 
 ## Deployer policy, role, and user
 
-The CloudFormation template `cloudreactor-aws-deploy-role-template.json` creates a policy containing the permissions required to deploy tasks to ECS, as well as a role and user that use that policy. The user created is named "cloudreactor-deployer". The user's access key ID and access key secret will be shown in the AWS console. These can be entered into the CloudReactor config file at `deploy/docker_deploy.env`.
-
+The CloudFormation template `cloudreactor-aws-deploy-role-template.json` creates a policy containing the permissions required to deploy tasks to ECS, as well as a role and user that use that policy. The user created is named "cloudreactor-deployer". The user's access key ID and access key secret will be shown in the AWS console.
 Note that you don't need to deploy this template if you can use a user or role that is able to deploy tasks to ECS, such as an admin user.
 
 To install the template and create these resources:
@@ -70,7 +73,24 @@ after entering any options.
 8. On the final page, check the checkbox at the bottom that acknowledges
 that CloudFormation may create IAM resources, and hit "Create Stack".
 9. After the stack is created, select the stack and go to the "Outputs" tab. You can now use the CloudreactorDeployerAccessKeyId value as the access key
-(AWS_ACCESS_KEY_ID environment variable) and the CloudreactorDeployerAccessKeySecret value as the secret key (AWS_SECRET_ACCESS_KEY environment variable) in the CloudReactor quickstart repo configuration file at `deploy/docker_deploy.env` (or, if you're deploying to ECS / CloudReactor via native deployment, you'd configure the AWS CLI with these keys)
+(AWS_ACCESS_KEY_ID environment variable) and the CloudreactorDeployerAccessKeySecret value as the secret key (AWS_SECRET_ACCESS_KEY environment variable) in the CloudReactor quickstart repo configuration file at `deploy.env`.
+
+# Using the Access Keys
+
+The values of `CloudreactorDeployerAccessKeyId` and
+`CloudreactorDeployerAccessKeySecret` in the stack output
+can be used to set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment
+variables respectively.
+
+These can be entered into the CloudReactor config file at `deploy.env` or,
+stored in your AWS configuration using `aws configure`
+if using
+the [CloudReactor ECS deployer Docker image and driver script](https://github.com/CloudReactor/aws-ecs-cloudreactor-deployer).
+
+Alternatively you can save these values in [GitHub secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
+if deploying with [CloudReactor ECS deployer GitHub action](https://github.com/marketplace/actions/cloudreactor-aws-ecs-deployer).
+
+# Using the Created Role
 
 If you don't want to use access keys, you can use the role that is output.
 There are two ways of using the role:
