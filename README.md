@@ -5,7 +5,7 @@
 This project contains two CloudFormation templates that can be used to set up CloudReactor in your AWS account.
 
 1. [Allowing CloudReactor to manage your ECS tasks and AWS Lambda functions](#allowing-cloudreactor-to-manage-your-tasks):
-If you did NOT use the [AWS Setup Wizard](https://github.com/CloudReactor/cloudreactor-aws-setup-wizard), i.e. you want to [set up CloudReactor manually](https://docs.cloudreactor.io/manual_setup.html#optional-set-aws-role-permissions-to-allow-cloudreactor-to-stop-start-and-schedule-ecs-tasks), this role template must be installed to allow CloudReactor to start your ECS tasjs or Lambda functions.
+If you did NOT use the [AWS Setup Wizard](https://github.com/CloudReactor/cloudreactor-aws-setup-wizard), i.e. you want to [set up CloudReactor manually](https://docs.cloudreactor.io/manual_setup.html#optional-set-aws-role-permissions-to-allow-cloudreactor-to-stop-start-and-schedule-ecs-tasks), this role template must be installed to allow CloudReactor to start your ECS tasks or Lambda functions.
 2. [Deployer policy](#deployer-policy-role-and-user): If you arrived here after following the CloudReactor [Getting Started](https://docs.cloudreactor.io/#optional-setting-up-a-new-aws-user-with-deployment-permissions) guide, this will let you create a special user and role that has the minimum permissions required to deploy tasks to ECS. Once this user / role is created, you can enter the credentials into the CloudReactor quickstart repo configuration file at `deploy/docker_deploy.env`. CloudReactor will then assume this role when deploying tasks.
 
 ## Allowing CloudReactor to manage your ECS tasks and Lambda functions
