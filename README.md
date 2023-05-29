@@ -52,8 +52,10 @@ bar, then redo the steps above.
 
 ## Deployer policy, role, and user
 
-The CloudFormation template `cloudreactor-aws-deploy-role-template.json` creates a policy containing the permissions required to deploy tasks to ECS, as well as a role and user that use that policy. The user created is named "cloudreactor-deployer". The user's access key ID and access key secret will be shown in the AWS console.
+The CloudFormation template `cloudreactor-aws-deploy-role-template.json` creates a policy containing the permissions required to deploy tasks to ECS, as well as a role and user that use that policy. The user created is named "cloudreactor-deployer".
 Note that you don't need to deploy this template if you can use a user or role that is able to deploy tasks to ECS, such as an admin user.
+
+### Deployer template installation
 
 To install the template and create these resources:
 
@@ -71,33 +73,19 @@ In the "Amazon S3 URL" field, enter:
 Run Environment as the parameter value of `DeploymentEnvironment`. Otherwise, you can use the role for
 multiple environments by leaving the value blank.
 8. If you want to give the deployer permission to update secrets in Secrets Manager, enter a value for the `SecretsPathPrefix` parameter.
-The deployer will then have write access to secrets with arn `arn:aws:secretsmanager:[aws_region]:[aws_account_id]:secret:[SecretsPathPrefix]`. Otherwise, you can leave this parameter blank and your deployer won't have access to Secrets Manager.
+The deployer will then have write access to secrets with arn `arn:aws:secretsmanager:[aws_region]:[aws_account_id]:secret:[SecretsPathPrefix]`. Otherwise, you can leave this parameter blank and the deployer won't have access to Secrets Manager.
 9. On the next page, you may enter tags for the stack, but it is not required.
 All other options on the page are also not required. Hit the "Next" button
 after entering any options.
 10. On the final page, check the checkbox at the bottom that acknowledges
 that CloudFormation may create IAM resources, and hit "Create Stack".
-11. After the stack is created, select the stack and go to the "Outputs" tab. You can now use the CloudreactorDeployerAccessKeyId value as the access key
-(AWS_ACCESS_KEY_ID environment variable) and the CloudreactorDeployerAccessKeySecret value as the secret key (AWS_SECRET_ACCESS_KEY environment variable) in the CloudReactor quickstart repo configuration file at `deploy.env`.
+11. After the stack is created, select the stack and go to the "Outputs" tab.
+the values of `CloudreactorDeployerRoleARN` and/or `CloudreactorDeployerInstanceProfileARN` can be now used directly to
+get the required permissions.
+12. If you need to use access keys, note the user denoted by `CloudreactorDeployerUserARN` in the "Outputs" tab. Then go to the IAM section of the AWS console, find the user, and create an access key and a secret key.
 
-# Using the Access Keys
+### Using the created deployer role
 
-The values of `CloudreactorDeployerAccessKeyId` and
-`CloudreactorDeployerAccessKeySecret` in the stack output
-can be used to set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment
-variables respectively.
-
-These can be entered into the CloudReactor config file at `deploy.env` or,
-stored in your AWS configuration using `aws configure`
-if using
-the [CloudReactor ECS deployer Docker image and driver script](https://github.com/CloudReactor/aws-ecs-cloudreactor-deployer).
-
-Alternatively you can save these values in [GitHub secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
-if deploying with [CloudReactor ECS deployer GitHub action](https://github.com/marketplace/actions/cloudreactor-aws-ecs-deployer).
-
-# Using the Created Role
-
-If you don't want to use access keys, you can use the role that is output.
 There are two ways of using the role:
 
 1. Assign the role to an EC2 instance used to deploy tasks. This EC2
@@ -109,3 +97,15 @@ roles to EC2 instances.
 machine users, or groups. If you use AWS Directory Service, you can assign the role to users using the Directory Service directly. Otherwise,
 add an AssumeRolePolicyDocument to the CloudReactor deployer role allowing the user to assume the role,
 and add permission for the user to assume the role. See [Assigning Roles to Users](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/assign_role.html) for detailed instructions.
+
+### Using Access Keys
+
+If you are running the deployment from a non-AWS environment (e.g. in a non-AWS environment like GitHub Actions), you can now use the access key and the secret key created in the last step of `Deployer template installation` above.
+
+These can be entered into the CloudReactor config file at `deploy.env` or,
+stored in your AWS configuration using `aws configure`
+if using
+the [CloudReactor ECS deployer Docker image and driver script](https://github.com/CloudReactor/aws-ecs-cloudreactor-deployer).
+
+Alternatively you can save these values in [GitHub secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
+if deploying with [CloudReactor ECS deployer GitHub action](https://github.com/marketplace/actions/cloudreactor-aws-ecs-deployer).

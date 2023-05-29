@@ -34,21 +34,6 @@
                     "Arn"
                 ]
             }
-        },
-        "CloudreactorDeployerAccessKeyId": {
-            "Description": "The access key ID for the cloudreactor-deployer-user",
-            "Value": {
-                "Ref": "deployerUserAccessKey"
-            }
-        },
-        "CloudreactorDeployerAccessKeySecret": {
-            "Description": "The access key secret for the cloudreactor-deployer-user",
-            "Value": {
-                "Fn::GetAtt": [
-                  "deployerUserAccessKey",
-                  "SecretAccessKey"
-                ]
-            }
         }
     },
     "Parameters": {
@@ -300,14 +285,6 @@
                         "Value": "CloudReactor"
                     }
                 ]
-            }
-        },
-        "deployerUserAccessKey" : {
-            "Type" : "AWS::IAM::AccessKey",
-            "Properties" : {
-                "UserName" : {
-                    "Ref": "deployerUser"
-                }
             }
         }
     }
