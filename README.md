@@ -67,12 +67,17 @@ In the "Amazon S3 URL" field, enter:
 
 5. Hit the "Next" button
 6. In the "Stack name" section, enter a name like "CloudReactor-deployer"
-7. On the next page, you may enter tags for the stack, but it is not required.
+7. If you want to create a role for deploying to a single Run Environment, enter the name of the
+Run Environment as the parameter value of `DeploymentEnvironment`. Otherwise, you can use the role for
+multiple environments by leaving the value blank.
+8. If you want to give the deployer permission to update secrets in Secrets Manager, enter a value for the `SecretsPathPrefix` parameter.
+The deployer will then have write access to secrets with arn `arn:aws:secretsmanager:[aws_region]:[aws_account_id]:secret:[SecretsPathPrefix]`. Otherwise, you can leave this parameter blank and your deployer won't have access to Secrets Manager.
+9. On the next page, you may enter tags for the stack, but it is not required.
 All other options on the page are also not required. Hit the "Next" button
 after entering any options.
-8. On the final page, check the checkbox at the bottom that acknowledges
+10. On the final page, check the checkbox at the bottom that acknowledges
 that CloudFormation may create IAM resources, and hit "Create Stack".
-9. After the stack is created, select the stack and go to the "Outputs" tab. You can now use the CloudreactorDeployerAccessKeyId value as the access key
+11. After the stack is created, select the stack and go to the "Outputs" tab. You can now use the CloudreactorDeployerAccessKeyId value as the access key
 (AWS_ACCESS_KEY_ID environment variable) and the CloudreactorDeployerAccessKeySecret value as the secret key (AWS_SECRET_ACCESS_KEY environment variable) in the CloudReactor quickstart repo configuration file at `deploy.env`.
 
 # Using the Access Keys

@@ -52,14 +52,49 @@
         }
     },
     "Parameters": {
+        "DeploymentEnvironment": {
+            "Description": "The name of the deployment environment, e.g. 'staging' or 'production'. Must consist only of alphanumeric characters. May be blank if the deployer role is to be used for multiple environments.",
+            "Default": "",
+            "MinLength": "0",
+            "MaxLength": "128",
+            "AllowedPattern": "[a-zA-Z0-9]*",
+            "NoEcho": "false",
+            "Type": "String"
+        },
         "SecretsPathPrefix": {
-            "Description": "A path prefix which can limit the secret values the deployer role can modify",
+            "Description": "A path prefix which can limit the secret values the deployer role can modify. Leave blank if no Secrets Manager access is desired.",
             "AllowedPattern": "[a-zA-Z0-9_/+=.@-]*",
             "Default": "",
             "MinLength": "0",
             "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
+        }
+    },
+    "Conditions": {
+        "HasEnvSuffix": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "DeploymentEnvironment"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "HasSecretManagerAccess": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "SecretsPathPrefix"
+                        },
+                        ""
+                    ]
+                }
+            ]
         }
     },
     "Resources": {
@@ -86,7 +121,13 @@
                             ]
                         },
                         {
-                            "Effect": "Allow",
+                            "Effect": {
+                                "Fn::If": [
+                                    "HasSecretManagerAccess",
+                                    "Allow",
+                                    "Deny"
+                                ]
+                            },
                             "Action": [
                                 "secretsmanager:CancelRotateSecret",
                                 "secretsmanager:CreateSecret",
@@ -154,12 +195,27 @@
                                 }
                             ]
                         }
-
-
                     ],
                     "Version": "2012-10-17"
                 },
-                "ManagedPolicyName": "cloudreactorDeployerPolicy",
+                "ManagedPolicyName": {
+                    "Fn::If": [
+                        "HasEnvSuffix",
+                        {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "cloudreactorDeployerPolicy-",
+                                    {
+                                        "Ref": "DeploymentEnvironment"
+                                    }
+                                ]
+                            ]
+
+                        },
+                        "cloudreactorDeployerPolicy"
+                    ]
+                },
                 "Description": "A managed policy containing permissions needed to deploy tasks to CloudReactor"
             }
         },
@@ -214,7 +270,25 @@
         "deployerUser": {
             "Type" : "AWS::IAM::User",
             "Properties" : {
-                "UserName": "cloudreactor-deployer",
+                "UserName": {
+                    "Fn::If": [
+                        "HasEnvSuffix",
+                        {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "cloudreactor-deployer-",
+                                    {
+                                        "Ref": "DeploymentEnvironment"
+                                    }
+                                ]
+                            ]
+
+                        },
+                        "cloudreactor-deployer"
+                    ]
+                },
+
                 "ManagedPolicyArns": [
                     {
                         "Ref": "deployerPolicy"
