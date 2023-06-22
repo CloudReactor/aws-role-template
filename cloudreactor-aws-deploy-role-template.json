@@ -38,11 +38,11 @@
     },
     "Parameters": {
         "DeploymentEnvironment": {
-            "Description": "The name of the deployment environment, e.g. 'staging' or 'production'. Must consist only of alphanumeric characters. May be blank if the deployer role is to be used for multiple environments.",
+            "Description": "The name of the deployment environment, e.g. 'staging' or 'production'. Must consist only of alphanumeric characters or dashes. May be blank if the deployer role is to be used for multiple environments.",
             "Default": "",
             "MinLength": "0",
             "MaxLength": "128",
-            "AllowedPattern": "[a-zA-Z0-9]*",
+            "AllowedPattern": "[a-zA-Z0-9\\-]*",
             "NoEcho": "false",
             "Type": "String"
         },
