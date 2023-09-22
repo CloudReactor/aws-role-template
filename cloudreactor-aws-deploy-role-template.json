@@ -96,6 +96,7 @@
                                 "ecr:CreateRepository",
                                 "ecr:DescribeRepositories",
                                 "ecr:GetAuthorizationToken",
+                                "ecr:GetRepositoryPolicy",
                                 "ecr:InitiateLayerUpload",
                                 "ecr:PutImage",
                                 "ecr:UploadLayerPart",
