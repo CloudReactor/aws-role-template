@@ -38,11 +38,11 @@
     },
     "Parameters": {
         "DeploymentEnvironment": {
-            "Description": "The name of the deployment environment, e.g. 'staging' or 'production'. Must consist only of alphanumeric characters. May be blank if the deployer role is to be used for multiple environments.",
+            "Description": "The name of the deployment environment, e.g. 'staging' or 'production'. Must consist only of alphanumeric characters or dashes. May be blank if the deployer role is to be used for multiple environments.",
             "Default": "",
             "MinLength": "0",
             "MaxLength": "128",
-            "AllowedPattern": "[a-zA-Z0-9]*",
+            "AllowedPattern": "[a-zA-Z0-9\\-]*",
             "NoEcho": "false",
             "Type": "String"
         },
@@ -112,6 +112,52 @@
             "Properties" : {
                 "PolicyDocument" : {
                     "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:PutObject",
+                                "s3:ListBucket",
+                                "s3:GetObject",
+                                "s3:DeleteObject"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": "codebuild:*",
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": "codestar-connections:*",
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:logs:",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            ":",
+                                            {
+                                                "Ref" : "AWS::AccountId"
+                                            },
+                                            ":log-group:/aws/codebuild/*"
+                                        ]
+                                    ]
+                                }
+                            ],
+                            "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents"
+                            ]
+                        },
                         {
                             "Effect": "Allow",
                             "Action": [
@@ -266,7 +312,7 @@
                                     ]
                                 }
                             },
-                            "Action": [ "sts:AssumeRole" ]
+                            "Action": "sts:AssumeRole"
                         },
                         {
                             "Effect": "Allow",
@@ -278,7 +324,17 @@
                                     ]
                                 }
                             },
-                            "Action": [ "sts:AssumeRole" ]
+                            "Action": "sts:AssumeRole"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "codebuild.amazonaws.com",
+                                    "codepipeline.amazonaws.com"
+                                ]
+                            },
+                            "Action": "sts:AssumeRole"
                         }
                     ]
                 },
