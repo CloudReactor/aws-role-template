@@ -54,6 +54,13 @@
             "MaxLength": "128",
             "NoEcho": "false",
             "Type": "String"
+        },
+        "RoleAssumerPatterns": {
+            "Description": "A comma-separated list of patterns for AWS principals (user ARNs or other role ARNs) that may assume the deployer role. Leave blank if no other AWS principal should be allowed to assume the role. Each pattern may contain wildcard ('*') characters.",
+            "AllowedPattern": "[a-zA-Z0-9:/_+=,.@*-]*",
+            "Default": "",
+            "NoEcho": "false",
+            "Type": "CommaDelimitedList"
         }
     },
     "Conditions": {
@@ -75,6 +82,23 @@
                     "Fn::Equals": [
                         {
                             "Ref": "SecretsPathPrefix"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "HasRoleAssumer": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Fn::Join": [
+                                "",
+                                {
+                                    "Ref": "RoleAssumerPatterns"
+                                }
+                            ]
                         },
                         ""
                     ]
@@ -223,13 +247,46 @@
                                 ]
                             },
                             "Action": [ "sts:AssumeRole" ]
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::If": [
+                                        "HasRoleAssumer",
+                                        {
+                                            "Ref": "RoleAssumerPatterns"
+                                        },
+                                        {
+                                            "Fn::GetAtt": [
+                                                "deployerUser",
+                                                "Arn"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "Action": [ "sts:AssumeRole" ]
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::GetAtt": [
+                                        "deployerUser",
+                                        "Arn"
+                                    ]
+                                }
+                            },
+                            "Action": [ "sts:AssumeRole" ]
                         }
                     ]
                 },
                 "ManagedPolicyArns": [
                     {
                         "Ref": "deployerPolicy"
-                    }
+                    },
+                    "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
                 ],
                 "Tags": [
                     {
@@ -275,7 +332,8 @@
                 "ManagedPolicyArns": [
                     {
                         "Ref": "deployerPolicy"
-                    }
+                    },
+                    "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
                 ],
                 "Tags": [
                     {
