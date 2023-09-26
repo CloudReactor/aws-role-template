@@ -159,7 +159,7 @@
                                         }
                                     }
                                 },
-                                                                {
+                                {
                                     "Effect": "Allow",
                                     "Action": [
                                         "lambda:InvokeFunction"
@@ -420,7 +420,7 @@
                 "Code": {
                     "ZipFile": {{ url_requester_contents }}
                 },
-                "Runtime": "python3.7",
+                "Runtime": "python3.11",
                 "Environment" : {
                    "Variables" : {
                       "URL_REQUESTER_ACCESS_KEY": {
