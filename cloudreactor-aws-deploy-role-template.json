@@ -72,7 +72,7 @@
         },
         "CloudWatchLogGroupPathPrefix": {
             "Description": "A path prefix which can limit the deployer to write to certain log groups in CloudWatch logs.",
-            "Default": "*",
+            "Default": "",
             "MinLength": "1",
             "MaxLength": "512",
             "NoEcho": "false",
