@@ -22,9 +22,11 @@ def handler(event, context):
         }
 
     hostname = parsed.hostname
+    domain_suffix = os.environ.get('DOMAIN_SUFFIX', '.cloudreactor.io')
 
-    if not hostname.endswith('.cloudreactor.io'):
-        print("Invalid hostname")
+    if (not domain_suffix.startswith('.') and (hostname != domain_suffix)) or \
+        (not hostname.endswith(domain_suffix)):
+        print(f"Invalid hostname: '{hostname=}'")
         return {
             'statusCode': 400,
             'body': 'Invalid hostname'
