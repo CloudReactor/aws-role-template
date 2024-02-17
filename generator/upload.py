@@ -86,6 +86,6 @@ if __name__ == '__main__':
     upload_file('cloudreactor-aws-deploy-role-template',
             bucket_prefix=bucket_prefix,
             deployment_environment=deployment_environment,
-            version='2.0.0', qualify_file_name=False)
+            version='2.1.0', qualify_file_name=False)
 
     print("Done uploading.")
